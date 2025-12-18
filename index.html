@@ -354,20 +354,36 @@ if (typeof escapeHtml !== "function") {
 }
 
 function buildPlacesQuery(){
-  const cuisines = getSelectedValues("cuisine");
-  const formats  = getSelectedValues("format");
+  const cuisines = getSelectedValues("cuisine"); // 料理系系（你上面選的）
+  const formats  = getSelectedValues("format");  // 用餐形式（你上面選的）
+
+  // 把「形式」轉成 Google 比較吃得懂的搜尋字
+  const formatMap = {
+    "火鍋": "火鍋",
+    "燒烤": "燒肉 燒烤",
+    "熱炒": "熱炒",
+    "麵食": "拉麵 麵食",
+    "飯類": "丼飯 便當 飯",
+    "簡餐": "簡餐 定食 便當",
+    "合菜": "合菜 桌菜",
+    "早午餐": "早午餐",
+    "輕食": "輕食 健康餐",
+    "小吃": "小吃",
+    "吃到飽": "吃到飽",
+    "咖啡甜點": "咖啡 甜點"
+  };
+
   const parts = [];
+
   if (cuisines.length) parts.push(cuisines.join(" "));
-  if (formats.length)  parts.push(formats.join(" "));
+  if (formats.length)  parts.push(formats.map(f => formatMap[f] || f).join(" "));
+
+  // 保底：永遠加餐廳
   parts.push("餐廳");
+
   return parts.join(" ").trim();
 }
 
-function mapsUrlForPlace(p){
-  const name = encodeURIComponent(p.name || "餐廳");
-  const url = `https://www.google.com/maps/search/?api=1&query=${name}&query_place_id=${p.place_id || ""}`;
-  return url;
-}
 
 function renderPlaces(list, keyword, lat, lng){
   const box  = document.getElementById("placesBox");
@@ -483,5 +499,6 @@ document.getElementById("btnShareLine")?.addEventListener("click", async () => {
   
 </body>
 </html>
+
 
 
