@@ -60,15 +60,18 @@
         </select>
       </div>
       <div style="flex:1; min-width:160px;">
-        <label>避開近期吃過（天數）</label>
-        <select id="cooldownDays">
-          <option value="1">1 天</option>
-          <option value="2" selected>2 天</option>
-          <option value="3">3 天</option>
-          <option value="5">5 天</option>
-          <option value="7">7 天</option>
-          <option value="0">不避開</option>
-        </select>
+    <div style="flex:1; min-width:160px;">
+  <label>餐廳範圍（公尺）</label>
+  <select id="radiusMeters">
+    <option value="300">300m（走路 4 分鐘）</option>
+    <option value="500">500m（走路 7 分鐘）</option>
+    <option value="800">800m（走路 12 分鐘）</option>
+    <option value="1200" selected>1200m（常用）</option>
+    <option value="2000">2000m（騎車/開車）</option>
+    <option value="3000">3000m（想吃就衝）</option>
+  </select>
+</div>
+
       </div>
     </div>
 
@@ -391,7 +394,9 @@ function renderPlaces(list, keyword, lat, lng){
   const wrap = document.getElementById("placesList");
 
   box.style.display = "block";
-  meta.textContent = `關鍵字：${keyword}｜範圍：附近約 1.2km`;
+  const r = parseInt(document.getElementById("radiusMeters")?.value || "1200", 10);
+meta.textContent = `關鍵字：${keyword}｜範圍：${r}m`;
+
 
   wrap.innerHTML = "";
   list.forEach((p, idx) => {
@@ -460,7 +465,8 @@ function recommendPlaces(){
         service.nearbySearch(
           {
             location: { lat, lng },
-            radius: 1200,
+            radius: parseInt(document.getElementById("radiusMeters")?.value || "1200", 10),
+
             type: "restaurant",
             keyword: keyword
           },
@@ -499,6 +505,7 @@ document.getElementById("btnShareLine")?.addEventListener("click", async () => {
   
 </body>
 </html>
+
 
 
 
