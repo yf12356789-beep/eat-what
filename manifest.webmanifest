@@ -1,0 +1,9 @@
+{
+  "name": "不能說的秘密㊙️｜今天吃什麼 V2",
+  "short_name": "不能說的秘密㊙️",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff"
+}
