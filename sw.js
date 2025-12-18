@@ -1,4 +1,4 @@
-const CACHE_NAME = "eat-what-pwa-v2";
+const CACHE_NAME = "eat-what-pwa-v４";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
