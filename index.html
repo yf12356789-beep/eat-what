@@ -14,7 +14,7 @@
 
   <!-- 1) 把你的 Google API Key 貼在這裡 -->
   <script>
-    const GOOGLE_MAPS_API_KEY = "AIzaSyCTEKfqf7bG3_CnORAu1ubk7OTPYC3lD_s";
+    const GOOGLE_MAPS_API_KEY = "PASTE_YOUR_API_KEY_HERE";
   </script>
 
   <style>
@@ -29,9 +29,10 @@
     .row{ display:flex; flex-wrap:wrap; gap:10px; }
     .group{ border:1px solid var(--b); border-radius:12px; padding:10px; }
     .group-title{ font-weight:800; font-size:14px; margin-bottom:8px; }
-    label.opt{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--b); border-radius:999px; font-size:13px; cursor:pointer; user-select:none; }
+    label.opt{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--b); border-radius:999px; font-size:13px; cursor:pointer; user-select:none; background:#fff; }
     input[type="checkbox"]{ transform:translateY(1px); }
     select{ width:100%; padding:10px; border:1px solid var(--b); border-radius:10px; background:#fff; font-size:14px; }
+    input[type="text"], input[type="range"]{ width:100%; }
     button{ padding:12px 12px; border-radius:12px; border:1px solid var(--b); background:#111827; color:#fff; font-weight:800; font-size:14px; cursor:pointer; }
     button.secondary{ background:#fff; color:#111827; }
     button.ghost{ background:#fff; color:#111827; }
@@ -59,6 +60,13 @@
       </div>
 
       <div class="grid">
+        <!-- 1) 模式 -->
+        <div class="grid2">
+          <button type="button" class="secondary" id="btnSolo">一人友善</button>
+          <button type="button" class="secondary" id="btnGroup">多人聚餐</button>
+        </div>
+
+        <!-- 2) 料理 -->
         <div class="group">
           <div class="group-title">料理類型（可多選）</div>
           <div class="row" id="cuisineGroup">
@@ -75,10 +83,12 @@
 
           <div id="cuisineCustomBox" style="display:none;margin-top:10px;">
             <div class="small">自訂料理關鍵字（用空格分隔，例如：川菜 麻辣）</div>
-            <input id="cuisineCustomText" placeholder="例如：川菜 麻辣" style="width:100%;margin-top:6px;padding:10px;border:1px solid var(--b);border-radius:10px;font-size:14px;" />
+            <input id="cuisineCustomText" type="text" placeholder="例如：川菜 麻辣"
+              style="width:100%;margin-top:6px;padding:10px;border:1px solid var(--b);border-radius:10px;font-size:14px;" />
           </div>
         </div>
 
+        <!-- 3) 形式 -->
         <div class="group">
           <div class="group-title">用餐形式（可多選）</div>
           <div class="row" id="formatGroup">
@@ -96,21 +106,33 @@
 
           <div id="formatCustomBox" style="display:none;margin-top:10px;">
             <div class="small">自訂形式關鍵字（用空格分隔，例如：居酒屋 串燒）</div>
-            <input id="formatCustomText" placeholder="例如：居酒屋 串燒" style="width:100%;margin-top:6px;padding:10px;border:1px solid var(--b);border-radius:10px;font-size:14px;" />
+            <input id="formatCustomText" type="text" placeholder="例如：居酒屋 串燒"
+              style="width:100%;margin-top:6px;padding:10px;border:1px solid var(--b);border-radius:10px;font-size:14px;" />
           </div>
         </div>
 
+        <!-- 4) 排除字 + 補充 -->
+        <div class="grid2">
+          <div>
+            <div class="small" style="margin-bottom:6px;">不吃關鍵字（逗號分隔，可空白）</div>
+            <input id="excludeKeywords" type="text" placeholder="例如：咖哩,辣,內臟"
+              style="width:100%;padding:10px;border:1px solid var(--b);border-radius:10px;font-size:14px;" />
+          </div>
+          <div>
+            <div class="small" style="margin-bottom:6px;">自訂補充（逗號或空格分隔，可空白）</div>
+            <input id="extraKeywords" type="text" placeholder="例如：酸菜白肉鍋 日式定食"
+              style="width:100%;padding:10px;border:1px solid var(--b);border-radius:10px;font-size:14px;" />
+          </div>
+        </div>
+
+        <!-- 5) 範圍滑桿 + 顯示筆數 -->
         <div class="grid2">
           <div>
             <div class="small" style="margin-bottom:6px;">餐廳範圍（公尺）</div>
-            <select id="radiusMeters">
-              <option value="300">300m（走路 4 分鐘）</option>
-              <option value="500">500m（走路 7 分鐘）</option>
-              <option value="800">800m（走路 12 分鐘）</option>
-              <option value="1200" selected>1200m（常用）</option>
-              <option value="2000">2000m（騎車/開車）</option>
-              <option value="3000">3000m（想吃就衝）</option>
-            </select>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <input id="radiusMeters" type="range" min="300" max="3000" step="100" value="1200" />
+              <div style="min-width:72px; text-align:right; font-weight:800;" id="radiusLabel">1200m</div>
+            </div>
           </div>
           <div>
             <div class="small" style="margin-bottom:6px;">顯示筆數</div>
@@ -122,11 +144,13 @@
           </div>
         </div>
 
+        <!-- 6) 推薦 & 看更多 -->
         <div class="grid2">
           <button type="button" id="btnPlaces">📍 推薦附近餐廳</button>
           <button type="button" class="secondary" id="btnOpenMapsAll">在 Google Maps 看更多</button>
         </div>
 
+        <!-- 結果區 -->
         <div class="result" id="placesBox" style="display:none;">
           <div class="title">附近餐廳推薦</div>
           <div class="meta" id="placesMeta"></div>
@@ -135,6 +159,14 @@
           <div class="grid2" style="margin-top:10px;">
             <button class="ghost" type="button" id="btnShareLine">分享給 LINE</button>
             <button class="ghost" type="button" id="btnRefreshPlaces">重新推薦</button>
+          </div>
+
+          <!-- Debug 開關（預設關閉） -->
+          <div style="margin-top:10px;">
+            <label class="opt">
+              <input type="checkbox" id="toggleDebug" />
+              顯示 Debug
+            </label>
           </div>
 
           <div class="dbg" id="dbgBox" style="display:none;">
@@ -162,15 +194,19 @@
     }
 
     function dbg(msg){
+      const toggle = document.getElementById("toggleDebug");
+      if (!toggle || !toggle.checked) return;
+
       const box = document.getElementById("dbgBox");
       const el = document.getElementById("dbgText");
       if (!box || !el) return;
+
       box.style.display = "block";
       const t = new Date().toLocaleTimeString();
       el.textContent = `[${t}] ${msg}\n` + el.textContent;
     }
 
-    // ---------- custom keyword toggles ----------
+    // ---------- UI: custom keyword toggles ----------
     const cuisineCustomToggle = document.getElementById("cuisineCustomToggle");
     const cuisineCustomBox = document.getElementById("cuisineCustomBox");
     const formatCustomToggle = document.getElementById("formatCustomToggle");
@@ -183,7 +219,33 @@
       formatCustomBox.style.display = formatCustomToggle.checked ? "block" : "none";
     });
 
-    // ---------- build query (based on your selections) ----------
+    // ---------- UI: radius label ----------
+    const radiusEl = document.getElementById("radiusMeters");
+    const radiusLabel = document.getElementById("radiusLabel");
+    function syncRadiusLabel(){
+      if (radiusEl && radiusLabel) radiusLabel.textContent = `${radiusEl.value}m`;
+    }
+    radiusEl?.addEventListener("input", syncRadiusLabel);
+    syncRadiusLabel();
+
+    // ---------- mode ----------
+    let MEAL_MODE = "solo"; // "solo" | "group"
+    function setMealMode(mode){
+      MEAL_MODE = mode;
+      const soloBtn = document.getElementById("btnSolo");
+      const groupBtn = document.getElementById("btnGroup");
+      if (soloBtn && groupBtn) {
+        soloBtn.style.background  = (mode === "solo") ? "#111827" : "#fff";
+        soloBtn.style.color       = (mode === "solo") ? "#fff" : "#111827";
+        groupBtn.style.background = (mode === "group") ? "#111827" : "#fff";
+        groupBtn.style.color      = (mode === "group") ? "#fff" : "#111827";
+      }
+    }
+    document.getElementById("btnSolo")?.addEventListener("click", () => setMealMode("solo"));
+    document.getElementById("btnGroup")?.addEventListener("click", () => setMealMode("group"));
+    setMealMode("solo");
+
+    // ---------- build query ----------
     function buildPlacesQuery(){
       const cuisines = getSelectedValues("cuisine");
       const formats  = getSelectedValues("format");
@@ -191,7 +253,12 @@
       const cuisineCustom = (document.getElementById("cuisineCustomText")?.value || "").trim();
       const formatCustom  = (document.getElementById("formatCustomText")?.value || "").trim();
 
-      // 用餐形式 → Google 比較吃得懂的搜尋詞
+      const extra = (document.getElementById("extraKeywords")?.value || "").trim()
+        .replace(/，/g, ",")
+        .split(/[,\s]+/)
+        .filter(Boolean)
+        .join(" ");
+
       const formatMap = {
         "火鍋": "火鍋",
         "燒烤": "燒肉 燒烤",
@@ -209,6 +276,11 @@
       if (formats.length)  parts.push(formats.map(f => formatMap[f] || f).join(" "));
       if (cuisineCustom)   parts.push(cuisineCustom);
       if (formatCustom)    parts.push(formatCustom);
+      if (extra)           parts.push(extra);
+
+      // 模式加權
+      if (MEAL_MODE === "solo")  parts.push("便當 定食 簡餐 小吃");
+      if (MEAL_MODE === "group") parts.push("火鍋 燒肉 合菜 熱炒");
 
       parts.push("餐廳");
       return parts.join(" ").trim();
@@ -232,7 +304,6 @@
 
     function mapsUrlForPlace(p){
       const name = encodeURIComponent(p.name || "餐廳");
-      // place_id 有時更準
       return `https://www.google.com/maps/search/?api=1&query=${name}&query_place_id=${p.place_id || ""}`;
     }
 
@@ -242,9 +313,8 @@
       const wrap = document.getElementById("placesList");
 
       box.style.display = "block";
-      meta.textContent = `關鍵字：${keyword}｜範圍：${radius}m`;
-
       wrap.innerHTML = "";
+
       list.forEach((p, idx) => {
         const rating = (p.rating ?? "—");
         const total  = (p.user_ratings_total ?? "—");
@@ -285,6 +355,9 @@
 
         wrap.appendChild(card);
       });
+
+      // meta 放最後更新：包含狀態（由 recommendPlaces callback 更新）
+      // 這裡留給 callback
     }
 
     // ---------- main: recommend places ----------
@@ -298,7 +371,14 @@
       const radius = parseInt(document.getElementById("radiusMeters")?.value || "1200", 10);
       const limit  = parseInt(document.getElementById("limitCount")?.value || "5", 10);
 
-      dbg(`start keyword="${keyword}", radius=${radius}, limit=${limit}`);
+      const excludes = (document.getElementById("excludeKeywords")?.value || "")
+        .replace(/，/g, ",")
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      dbg(`start keyword="${keyword}", mode=${MEAL_MODE}, radius=${radius}, limit=${limit}`);
+      dbg(`excludes=${excludes.join("|") || "(none)"}`);
 
       if (!navigator.geolocation) {
         alert("此瀏覽器不支援定位");
@@ -323,7 +403,7 @@
               {
                 location: { lat, lng },
                 radius: radius,
-                // 只用 keyword（保留 radius 效果更明顯）
+                // 用 keyword（含餐廳 + 你的選項映射）
                 keyword: keyword
               },
               (results, status) => {
@@ -332,8 +412,9 @@
                 const box  = document.getElementById("placesBox");
                 const meta = document.getElementById("placesMeta");
                 const wrap = document.getElementById("placesList");
+
                 box.style.display = "block";
-                meta.textContent = `關鍵字：${keyword}｜範圍：${radius}m｜狀態：${status}｜筆數：${results ? results.length : 0}`;
+                meta.textContent = `關鍵字：${keyword}｜模式：${MEAL_MODE === "solo" ? "一人友善" : "多人聚餐"}｜範圍：${radius}m｜狀態：${status}｜筆數：${results ? results.length : 0}`;
 
                 if (status !== google.maps.places.PlacesServiceStatus.OK || !results || results.length === 0) {
                   wrap.innerHTML = `<div class="small">找不到結果（可把範圍調大到 2000m/3000m，或把選項選少一點）</div>`;
@@ -342,7 +423,20 @@
                   return;
                 }
 
-                const sliced = results.slice(0, limit);
+                const filtered = results.filter(p => {
+                  const hay = `${p.name || ""} ${p.vicinity || ""}`.toLowerCase();
+
+                  // 模式輕量排除（避免結果太離譜）
+                  if (MEAL_MODE === "solo" && /合菜|桌菜/.test(hay)) return false;
+                  if (MEAL_MODE === "group" && /便當/.test(hay)) return false;
+
+                  for (const ex of excludes) {
+                    if (hay.includes(ex.toLowerCase())) return false;
+                  }
+                  return true;
+                });
+
+                const sliced = filtered.slice(0, limit);
                 renderPlaces(sliced, keyword, radius);
 
                 __lastMoreUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(keyword + " near me")}&center=${lat},${lng}`;
@@ -356,7 +450,7 @@
       );
     }
 
-    // ---------- top buttons ----------
+    // ---------- buttons ----------
     document.getElementById("btnPlaces")?.addEventListener("click", recommendPlaces);
     document.getElementById("btnRefreshPlaces")?.addEventListener("click", recommendPlaces);
 
@@ -374,7 +468,7 @@
       catch(e){ alert("複製失敗，請手動複製"); }
     });
 
-    // ---------- register service worker ----------
+    // ---------- service worker ----------
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js");
@@ -383,4 +477,3 @@
   </script>
 </body>
 </html>
-
