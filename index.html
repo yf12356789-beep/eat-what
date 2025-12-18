@@ -39,6 +39,10 @@
     .history ul{padding-left:18px; margin:8px 0 0;}
     a{color:#2563eb;}
   </style>
+  <script>
+  const GOOGLE_MAPS_API_KEY = "AIzaSyCTEKfqf7bG3_CnORAu1ubk7OTPYC3lD_s";
+</script>
+
 </head>
 <body>
   <div class="card">
@@ -308,6 +312,176 @@
   }
 </script>
 
+  <!-- ====== 附近餐廳推薦（Places）UI ====== -->
+<div id="placesBox" style="display:none; margin-top:16px; padding:12px; border:1px solid #e5e7eb; border-radius:12px; background:#fff;">
+  <div style="font-weight:800; font-size:18px;">附近餐廳推薦</div>
+  <div id="placesMeta" style="margin-top:6px; color:#6b7280; font-size:13px;"></div>
+  <div id="placesList" style="margin-top:10px; display:grid; gap:10px;"></div>
+
+  <div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+    <button type="button" id="btnShareLine">分享給 LINE</button>
+    <button type="button" id="btnRefreshPlaces">重新推薦</button>
+  </div>
+</div>
+
+<div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+  <button type="button" id="btnPlaces">📍 推薦附近餐廳</button>
+  <button type="button" id="btnOpenMapsAll">在 Google Maps 看更多</button>
+</div>
+<!-- ====== /附近餐廳推薦（Places）UI ====== -->
+
+<script>
+  function loadGoogleMaps(cb){
+    if (window.google && window.google.maps && window.google.maps.places) return cb();
+    const s = document.createElement("script");
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=zh-TW&region=TW`;
+    s.async = true;
+    s.defer = true;
+    s.onload = cb;
+    document.head.appendChild(s);
+  }
+// ====== Places：附近餐廳推薦（顯示店名/評分/地址 + 開地圖 + 分享 LINE）======
+let __lastShareText = "";
+let __lastMoreUrl = "";
+
+// 如果你原本沒有 escapeHtml，補上（避免特殊字元壞掉）
+if (typeof escapeHtml !== "function") {
+  window.escapeHtml = function (s) {
+    return String(s).replace(/[&<>"']/g, (m) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m])
+    );
+  };
+}
+
+function buildPlacesQuery(){
+  const cuisines = getSelectedValues("cuisine");
+  const formats  = getSelectedValues("format");
+  const parts = [];
+  if (cuisines.length) parts.push(cuisines.join(" "));
+  if (formats.length)  parts.push(formats.join(" "));
+  parts.push("餐廳");
+  return parts.join(" ").trim();
+}
+
+function mapsUrlForPlace(p){
+  const name = encodeURIComponent(p.name || "餐廳");
+  const url = `https://www.google.com/maps/search/?api=1&query=${name}&query_place_id=${p.place_id || ""}`;
+  return url;
+}
+
+function renderPlaces(list, keyword, lat, lng){
+  const box  = document.getElementById("placesBox");
+  const meta = document.getElementById("placesMeta");
+  const wrap = document.getElementById("placesList");
+
+  box.style.display = "block";
+  meta.textContent = `關鍵字：${keyword}｜範圍：附近約 1.2km`;
+
+  wrap.innerHTML = "";
+  list.forEach((p, idx) => {
+    const rating = (p.rating ?? "—");
+    const total  = (p.user_ratings_total ?? "—");
+    const addr   = (p.vicinity ?? "");
+    const url    = mapsUrlForPlace(p);
+
+    const card = document.createElement("div");
+    card.style.cssText = "border:1px solid #e5e7eb;border-radius:12px;padding:10px;background:#fff;";
+    card.innerHTML = `
+      <div style="font-weight:800;font-size:16px;">${idx+1}. ${escapeHtml(p.name || "餐廳")}</div>
+      <div style="margin-top:6px;font-size:13px;color:#374151;line-height:1.5;">
+        ⭐ ${rating}（${total}）<br>
+        <span style="color:#6b7280;">${escapeHtml(addr)}</span>
+      </div>
+      <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <button type="button" class="ghost">開啟地圖</button>
+        <button type="button" class="ghost">分享 LINE</button>
+      </div>
+    `;
+
+    const [btnMap, btnShare] = card.querySelectorAll("button");
+
+    btnMap.addEventListener("click", () => {
+      __lastShareText = `推薦餐廳：${p.name}\n${url}`;
+      window.open(url, "_blank");
+    });
+
+    btnShare.addEventListener("click", async () => {
+      const text = `推薦餐廳：${p.name}\n${url}`;
+      __lastShareText = text;
+
+      // iPhone Safari：會跳系統分享面板（可選 LINE）
+      if (navigator.share) {
+        try { await navigator.share({ title: "附近餐廳推薦", text, url }); return; } catch(e) {}
+      }
+      // 不支援就複製
+      try { await navigator.clipboard.writeText(text); alert("已複製，貼到 LINE 即可"); }
+      catch(e){ alert("複製失敗，請手動複製"); }
+    });
+
+    wrap.appendChild(card);
+  });
+
+  __lastMoreUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(keyword + " near me")}&center=${lat},${lng}`;
+  __lastShareText = `附近餐廳推薦（${keyword}）\n${__lastMoreUrl}`;
+}
+
+function recommendPlaces(){
+  const keyword = buildPlacesQuery();
+
+  if (!navigator.geolocation) {
+    alert("此瀏覽器不支援定位");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+
+      loadGoogleMaps(() => {
+        const service = new google.maps.places.PlacesService(document.createElement("div"));
+
+        service.nearbySearch(
+          {
+            location: { lat, lng },
+            radius: 1200,
+            type: "restaurant",
+            keyword: keyword
+          },
+          (results, status) => {
+            if (status !== google.maps.places.PlacesServiceStatus.OK || !results || !results.length) {
+              alert("附近找不到餐廳：請放寬條件或把半徑調大");
+              return;
+            }
+            renderPlaces(results.slice(0, 5), keyword, lat, lng);
+          }
+        );
+      });
+    },
+    () => alert("定位失敗或未允許定位（iPhone：設定 > Safari > 定位 允許）"),
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+  );
+}
+
+// 綁定 UI 按鈕
+document.getElementById("btnPlaces")?.addEventListener("click", recommendPlaces);
+document.getElementById("btnRefreshPlaces")?.addEventListener("click", recommendPlaces);
+document.getElementById("btnOpenMapsAll")?.addEventListener("click", () => {
+  if (!__lastMoreUrl) return alert("請先按「推薦附近餐廳」");
+  window.open(__lastMoreUrl, "_blank");
+});
+document.getElementById("btnShareLine")?.addEventListener("click", async () => {
+  if (!__lastShareText) return alert("請先按「推薦附近餐廳」");
+  if (navigator.share) {
+    try { await navigator.share({ title:"附近餐廳推薦", text: __lastShareText, url: __lastMoreUrl }); return; } catch(e) {}
+  }
+  try { await navigator.clipboard.writeText(__lastShareText); alert("已複製，貼到 LINE 即可"); }
+  catch(e){ alert("複製失敗，請手動複製"); }
+});
+
+</script>
+  
 </body>
 </html>
+
 
