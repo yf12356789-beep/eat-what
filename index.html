@@ -2,524 +2,384 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>不能說的秘密㊙️｜今天吃什麼 V2</title>
+
+  <!-- PWA -->
   <link rel="manifest" href="./manifest.webmanifest" />
-<meta name="theme-color" content="#ffffff" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-title" content="不能說的秘密㊙️" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="不能說的秘密㊙️" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+  <!-- 1) 把你的 Google API Key 貼在這裡 -->
+  <script>
+    const GOOGLE_MAPS_API_KEY = "PASTE_YOUR_API_KEY_HERE";
+  </script>
 
   <style>
-    body{
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",Arial,sans-serif;
-      background:#f5f6f8; margin:0; padding:18px;
-    }
-    .card{
-      max-width:560px; margin:auto; background:#fff; padding:18px;
-      border-radius:14px; box-shadow:0 6px 20px rgba(0,0,0,.08);
-    }
-    h1{font-size:20px; text-align:center; margin:6px 0 14px;}
-    .sub{font-size:12px; color:#6b7280; text-align:center; margin-bottom:8px;}
-    .row{display:flex; gap:10px; flex-wrap:wrap;}
-    label{display:block; margin-top:12px; font-size:14px;}
-    input, select, button{
-      width:100%; margin-top:8px; padding:10px; font-size:16px;
-      border-radius:10px; border:1px solid #cfcfcf;
-      box-sizing:border-box;
-    }
-    button{background:#2563eb; color:#fff; border:none; cursor:pointer;}
-    button.secondary{background:#111827;}
-    button.ghost{background:#fff; color:#111; border:1px solid #cfcfcf;}
-    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;}
-    .hintrow{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
-    .result{margin-top:14px; padding:12px; border-radius:12px; background:#f3f4f6;}
-    .result .title{font-weight:700; font-size:18px;}
-    .meta{font-size:13px; color:#374151; line-height:1.5;}
-    .history ul{padding-left:18px; margin:8px 0 0;}
-    a{color:#2563eb;}
+    :root { --b:#e5e7eb; --t:#111827; --m:#6b7280; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC","Helvetica Neue",Arial; background:#f7f7f8; color:var(--t); }
+    .wrap{ max-width:720px; margin:0 auto; padding:16px; }
+    .card{ background:#fff; border:1px solid var(--b); border-radius:14px; padding:14px; }
+    h1{ font-size:20px; margin:0 0 10px; }
+    .sub{ color:var(--m); font-size:13px; margin-bottom:12px; line-height:1.4; }
+    .grid{ display:grid; gap:10px; }
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .row{ display:flex; flex-wrap:wrap; gap:10px; }
+    .group{ border:1px solid var(--b); border-radius:12px; padding:10px; }
+    .group-title{ font-weight:800; font-size:14px; margin-bottom:8px; }
+    label.opt{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--b); border-radius:999px; font-size:13px; cursor:pointer; user-select:none; }
+    input[type="checkbox"]{ transform:translateY(1px); }
+    select{ width:100%; padding:10px; border:1px solid var(--b); border-radius:10px; background:#fff; font-size:14px; }
+    button{ padding:12px 12px; border-radius:12px; border:1px solid var(--b); background:#111827; color:#fff; font-weight:800; font-size:14px; cursor:pointer; }
+    button.secondary{ background:#fff; color:#111827; }
+    button.ghost{ background:#fff; color:#111827; }
+    button:active{ transform:scale(0.99); }
+    .result{ margin-top:12px; }
+    .title{ font-weight:900; font-size:18px; }
+    .meta{ margin-top:6px; color:var(--m); font-size:13px; line-height:1.4; }
+    .small{ color:var(--m); font-size:12px; }
+    .list{ margin-top:10px; display:grid; gap:10px; }
+    .place{ border:1px solid var(--b); border-radius:12px; padding:10px; background:#fff; }
+    .place-name{ font-weight:900; font-size:16px; }
+    .place-meta{ margin-top:6px; font-size:13px; color:#374151; line-height:1.45; }
+    .dbg{ margin-top:10px; padding:10px; border:1px dashed #cbd5e1; border-radius:12px; background:#f8fafc; color:#334155; font-size:12px; }
+    .dbg b{ display:block; margin-bottom:6px; }
+    .dbg pre{ margin:0; white-space:pre-wrap; }
   </style>
-  <script>
-  const GOOGLE_MAPS_API_KEY = "AIzaSyCTEKfqf7bG3_CnORAu1ubk7OTPYC3lD_s";
-</script>
-
 </head>
+
 <body>
-  <div class="card">
-    <h1>不能說的秘密㊙️｜今天吃什麼 V2</h1>
-    <div class="sub">快速決策｜可多選條件｜保留自訂｜會記住你近期吃過的</div>
-
-    <div class="row">
-      <div style="flex:1; min-width:160px;">
-        <label>用餐時段</label>
-        <select id="mealTime">
-          <option value="breakfast">早餐</option>
-          <option value="lunch" selected>午餐</option>
-          <option value="dinner">晚餐</option>
-          <option value="any">不分</option>
-        </select>
+  <div class="wrap">
+    <div class="card">
+      <h1>不能說的秘密㊙️｜今天吃什麼 V2</h1>
+      <div class="sub">
+        選好條件 → 推薦附近餐廳（顯示店名） → 一鍵開 Google Maps → 可分享 LINE
       </div>
-      <div style="flex:1; min-width:160px;">
-    <div style="flex:1; min-width:160px;">
-  <label>餐廳範圍（公尺）</label>
-  <select id="radiusMeters">
-    <option value="300">300m（走路 4 分鐘）</option>
-    <option value="500">500m（走路 7 分鐘）</option>
-    <option value="800">800m（走路 12 分鐘）</option>
-    <option value="1200" selected>1200m（常用）</option>
-    <option value="2000">2000m（騎車/開車）</option>
-    <option value="3000">3000m（想吃就衝）</option>
-  </select>
-</div>
 
+      <div class="grid">
+        <div class="group">
+          <div class="group-title">料理類型（可多選）</div>
+          <div class="row" id="cuisineGroup">
+            <label class="opt"><input type="checkbox" name="cuisine" value="日式料理">日式料理</label>
+            <label class="opt"><input type="checkbox" name="cuisine" value="台式料理">台式料理</label>
+            <label class="opt"><input type="checkbox" name="cuisine" value="中式料理">中式料理</label>
+            <label class="opt"><input type="checkbox" name="cuisine" value="義式料理">義式料理</label>
+            <label class="opt"><input type="checkbox" name="cuisine" value="美式料理">美式料理</label>
+            <label class="opt"><input type="checkbox" name="cuisine" value="港式料理">港式料理</label>
+            <label class="opt"><input type="checkbox" name="cuisine" value="客家料理">客家料理</label>
+            <label class="opt"><input type="checkbox" name="cuisine" value="素食">素食</label>
+            <label class="opt"><input type="checkbox" name="cuisine" value="自訂" id="cuisineCustomToggle">自訂</label>
+          </div>
+
+          <div id="cuisineCustomBox" style="display:none;margin-top:10px;">
+            <div class="small">自訂料理關鍵字（用空格分隔，例如：川菜 麻辣）</div>
+            <input id="cuisineCustomText" placeholder="例如：川菜 麻辣" style="width:100%;margin-top:6px;padding:10px;border:1px solid var(--b);border-radius:10px;font-size:14px;" />
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title">用餐形式（可多選）</div>
+          <div class="row" id="formatGroup">
+            <label class="opt"><input type="checkbox" name="format" value="火鍋">火鍋</label>
+            <label class="opt"><input type="checkbox" name="format" value="燒烤">燒烤</label>
+            <label class="opt"><input type="checkbox" name="format" value="熱炒">熱炒</label>
+            <label class="opt"><input type="checkbox" name="format" value="合菜">合菜</label>
+            <label class="opt"><input type="checkbox" name="format" value="簡餐">簡餐</label>
+            <label class="opt"><input type="checkbox" name="format" value="小吃">小吃</label>
+            <label class="opt"><input type="checkbox" name="format" value="早午餐">早午餐</label>
+            <label class="opt"><input type="checkbox" name="format" value="吃到飽">吃到飽</label>
+            <label class="opt"><input type="checkbox" name="format" value="咖啡甜點">咖啡甜點</label>
+            <label class="opt"><input type="checkbox" name="format" value="自訂" id="formatCustomToggle">自訂</label>
+          </div>
+
+          <div id="formatCustomBox" style="display:none;margin-top:10px;">
+            <div class="small">自訂形式關鍵字（用空格分隔，例如：居酒屋 串燒）</div>
+            <input id="formatCustomText" placeholder="例如：居酒屋 串燒" style="width:100%;margin-top:6px;padding:10px;border:1px solid var(--b);border-radius:10px;font-size:14px;" />
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <div class="small" style="margin-bottom:6px;">餐廳範圍（公尺）</div>
+            <select id="radiusMeters">
+              <option value="300">300m（走路 4 分鐘）</option>
+              <option value="500">500m（走路 7 分鐘）</option>
+              <option value="800">800m（走路 12 分鐘）</option>
+              <option value="1200" selected>1200m（常用）</option>
+              <option value="2000">2000m（騎車/開車）</option>
+              <option value="3000">3000m（想吃就衝）</option>
+            </select>
+          </div>
+          <div>
+            <div class="small" style="margin-bottom:6px;">顯示筆數</div>
+            <select id="limitCount">
+              <option value="3">3 間</option>
+              <option value="5" selected>5 間</option>
+              <option value="8">8 間</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <button type="button" id="btnPlaces">📍 推薦附近餐廳</button>
+          <button type="button" class="secondary" id="btnOpenMapsAll">在 Google Maps 看更多</button>
+        </div>
+
+        <div class="result" id="placesBox" style="display:none;">
+          <div class="title">附近餐廳推薦</div>
+          <div class="meta" id="placesMeta"></div>
+          <div class="list" id="placesList"></div>
+
+          <div class="grid2" style="margin-top:10px;">
+            <button class="ghost" type="button" id="btnShareLine">分享給 LINE</button>
+            <button class="ghost" type="button" id="btnRefreshPlaces">重新推薦</button>
+          </div>
+
+          <div class="dbg" id="dbgBox" style="display:none;">
+            <b>Debug</b>
+            <pre id="dbgText"></pre>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <label>料理系系（可多選；不選=不限）</label>
-    <select id="cuisine" multiple size="7">
-      <option value="日式">日式料理</option>
-      <option value="中式">中式料理</option>
-      <option value="台式">台式料理</option>
-      <option value="港式">港式料理</option>
-      <option value="美式">美式料理</option>
-      <option value="義式">義式料理</option>
-      <option value="南洋">南洋料理</option>
-      <option value="泰式">泰式料理</option>
-      <option value="韓式">韓式料理</option>
-      <option value="蔬食">素食 / 蔬食</option>
-      <option value="混搭">異國混搭</option>
-    </select>
-
-    <div class="hintrow">
-      <button class="ghost" type="button" id="cAll">全選</button>
-      <button class="ghost" type="button" id="cClear">清除</button>
-      <button class="ghost" type="button" id="cSafe">常見</button>
-    </div>
-
-    <label>用餐形式（可多選；不選=不限）</label>
-    <select id="format" multiple size="8">
-      <option value="火鍋">火鍋</option>
-      <option value="簡餐">簡餐 / 便當</option>
-      <option value="合菜">合菜</option>
-      <option value="麵食">麵食 / 拉麵 / 粉麵</option>
-      <option value="飯類">飯類</option>
-      <option value="燒烤">燒烤</option>
-      <option value="熱炒">熱炒</option>
-      <option value="早午餐">早午餐</option>
-      <option value="輕食">輕食 / 健康餐</option>
-      <option value="小吃">小吃</option>
-      <option value="吃到飽">吃到飽</option>
-      <option value="咖啡甜點">咖啡 / 甜點</option>
-    </select>
-
-    <div class="hintrow">
-      <button class="ghost" type="button" id="fAll">全選</button>
-      <button class="ghost" type="button" id="fClear">清除</button>
-      <button class="ghost" type="button" id="fSolo">一人友善</button>
-      <button class="ghost" type="button" id="fGroup">多人聚餐</button>
-    </div>
-
-    <label>不吃關鍵字（逗號分隔，可空白）</label>
-    <input id="ban" placeholder="例如：咖哩,辣,內臟" />
-
-    <label>自訂補充（選填，逗號分隔）</label>
-    <input id="customFood" placeholder="例如：牛肉麵,酸菜白肉鍋,日式定食" />
-
-    <div class="grid2">
-      <button type="button" id="btnDecide">幫我決定</button>
-      <button type="button" class="secondary" id="btnThree">三選一（降低踩雷）</button>
-    </div>
-
-    <div class="result" id="resultBox" style="display:none;">
-      <div class="title" id="resultTitle"></div>
-      <div class="meta" id="resultMeta"></div>
-
-      <div class="grid2">
-        <button class="ghost" type="button" id="btnMaps">Google Maps 找附近</button>
-        <button class="ghost" type="button" id="btnCopy">一鍵複製（貼到 LINE）</button>
-      </div>
-    </div>
-
-    <div class="history">
-      <label>最近決策紀錄（本機）</label>
-      <ul id="historyList"></ul>
     </div>
   </div>
 
+  <!-- Google Places Service anchor (must be in DOM for iOS Safari) -->
+  <div id="placesServiceAnchor" style="display:none;"></div>
+
   <script>
-    const STORAGE_KEY = "eat_decider_history_v2";
-
-    const FOOD_DB = [
-      {name:"日式拉麵",c:"日式",f:"麵食"},
-      {name:"日式定食",c:"日式",f:"簡餐"},
-      {name:"壽司",c:"日式",f:"合菜"},
-      {name:"牛肉麵",c:"中式",f:"麵食"},
-      {name:"水餃 / 鍋貼",c:"中式",f:"小吃"},
-      {name:"滷肉飯",c:"台式",f:"飯類"},
-      {name:"鹽酥雞",c:"台式",f:"小吃"},
-      {name:"港式點心",c:"港式",f:"合菜"},
-      {name:"美式漢堡",c:"美式",f:"簡餐"},
-      {name:"義大利麵",c:"義式",f:"簡餐"},
-      {name:"南洋料理",c:"南洋",f:"合菜"},
-      {name:"泰式料理",c:"泰式",f:"合菜"},
-      {name:"韓式料理",c:"韓式",f:"合菜"},
-      {name:"火鍋",c:"混搭",f:"火鍋"},
-      {name:"燒烤",c:"混搭",f:"燒烤"},
-      {name:"熱炒",c:"台式",f:"熱炒"},
-      {name:"早午餐",c:"混搭",f:"早午餐"},
-      {name:"健康餐盒",c:"混搭",f:"輕食"},
-      {name:"吃到飽",c:"混搭",f:"吃到飽"},
-      {name:"咖啡甜點",c:"混搭",f:"咖啡甜點"}
-    ];
-
-    // 你偏好：喜歡日式、不喜歡咖哩/韓/泰/越（可自行刪掉）
-    const PREFER = new Set(["日式"]);
-    const DISLIKE = new Set(["韓式","泰式"]);
-
-    function $(id){ return document.getElementById(id); }
-    function getSelectedValues(id){
-      return [...$(id).selectedOptions].map(o=>o.value);
-    }
-    function loadHistory(){
-      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }catch{ return []; }
-    }
-    function saveHistory(h){ localStorage.setItem(STORAGE_KEY, JSON.stringify(h.slice(0,10))); }
-    function renderHistory(){
-      const ul = $("historyList"); ul.innerHTML="";
-      loadHistory().forEach(x=>{
-        const li=document.createElement("li");
-        li.textContent=`${x.name}（${x.time}）`;
-        ul.appendChild(li);
-      });
-    }
-    function setMulti(id, arr){
-      [...$(id).options].forEach(o=>o.selected=arr.includes(o.value));
+    // ---------- helpers ----------
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#039;" }[m]));
     }
 
-    function pickCandidates(triple){
+    function getSelectedValues(name){
+      return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
+        .map(el => el.value)
+        .filter(v => v !== "自訂");
+    }
+
+    function dbg(msg){
+      const box = document.getElementById("dbgBox");
+      const el = document.getElementById("dbgText");
+      if (!box || !el) return;
+      box.style.display = "block";
+      const t = new Date().toLocaleTimeString();
+      el.textContent = `[${t}] ${msg}\n` + el.textContent;
+    }
+
+    // ---------- custom keyword toggles ----------
+    const cuisineCustomToggle = document.getElementById("cuisineCustomToggle");
+    const cuisineCustomBox = document.getElementById("cuisineCustomBox");
+    const formatCustomToggle = document.getElementById("formatCustomToggle");
+    const formatCustomBox = document.getElementById("formatCustomBox");
+
+    cuisineCustomToggle?.addEventListener("change", () => {
+      cuisineCustomBox.style.display = cuisineCustomToggle.checked ? "block" : "none";
+    });
+    formatCustomToggle?.addEventListener("change", () => {
+      formatCustomBox.style.display = formatCustomToggle.checked ? "block" : "none";
+    });
+
+    // ---------- build query (based on your selections) ----------
+    function buildPlacesQuery(){
       const cuisines = getSelectedValues("cuisine");
       const formats  = getSelectedValues("format");
-      const banRaw = $("ban").value.trim();
-      const ban = banRaw ? banRaw.split(",").map(s=>s.trim()).filter(Boolean) : [];
-      const customRaw = $("customFood").value.trim();
-      const custom = customRaw ? customRaw.split(",").map(s=>s.trim()).filter(Boolean) : [];
 
-      let pool = FOOD_DB.filter(x=>{
-        const cOK = cuisines.length===0 || cuisines.includes(x.c) || x.c==="混搭";
-        const fOK = formats.length===0 || formats.includes(x.f);
-        const banOK = ban.length===0 || !ban.some(b=>x.name.includes(b));
-        const dislikeOK = !DISLIKE.has(x.c);
-        return cOK && fOK && banOK && dislikeOK;
+      const cuisineCustom = (document.getElementById("cuisineCustomText")?.value || "").trim();
+      const formatCustom  = (document.getElementById("formatCustomText")?.value || "").trim();
+
+      // 用餐形式 → Google 比較吃得懂的搜尋詞
+      const formatMap = {
+        "火鍋": "火鍋",
+        "燒烤": "燒肉 燒烤",
+        "熱炒": "熱炒",
+        "合菜": "合菜 桌菜",
+        "簡餐": "簡餐 定食 便當",
+        "小吃": "小吃",
+        "早午餐": "早午餐",
+        "吃到飽": "吃到飽",
+        "咖啡甜點": "咖啡 甜點"
+      };
+
+      const parts = [];
+      if (cuisines.length) parts.push(cuisines.join(" "));
+      if (formats.length)  parts.push(formats.map(f => formatMap[f] || f).join(" "));
+      if (cuisineCustom)   parts.push(cuisineCustom);
+      if (formatCustom)    parts.push(formatCustom);
+
+      parts.push("餐廳");
+      return parts.join(" ").trim();
+    }
+
+    // ---------- load google maps js (places) ----------
+    function loadGoogleMaps(cb){
+      if (window.google && window.google.maps && window.google.maps.places) return cb();
+      const s = document.createElement("script");
+      s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=zh-TW&region=TW`;
+      s.async = true;
+      s.defer = true;
+      s.onload = cb;
+      s.onerror = () => alert("Google Maps SDK 載入失敗（請檢查 API Key / 限制 / 是否啟用 Maps JavaScript API）");
+      document.head.appendChild(s);
+    }
+
+    // ---------- UI render ----------
+    let __lastShareText = "";
+    let __lastMoreUrl = "";
+
+    function mapsUrlForPlace(p){
+      const name = encodeURIComponent(p.name || "餐廳");
+      // place_id 有時更準
+      return `https://www.google.com/maps/search/?api=1&query=${name}&query_place_id=${p.place_id || ""}`;
+    }
+
+    function renderPlaces(list, keyword, radius){
+      const box  = document.getElementById("placesBox");
+      const meta = document.getElementById("placesMeta");
+      const wrap = document.getElementById("placesList");
+
+      box.style.display = "block";
+      meta.textContent = `關鍵字：${keyword}｜範圍：${radius}m`;
+
+      wrap.innerHTML = "";
+      list.forEach((p, idx) => {
+        const rating = (p.rating ?? "—");
+        const total  = (p.user_ratings_total ?? "—");
+        const addr   = (p.vicinity ?? "");
+        const url    = mapsUrlForPlace(p);
+
+        const card = document.createElement("div");
+        card.className = "place";
+        card.innerHTML = `
+          <div class="place-name">${idx + 1}. ${escapeHtml(p.name || "餐廳")}</div>
+          <div class="place-meta">
+            ⭐ ${rating}（${total}）<br/>
+            <span style="color:#6b7280;">${escapeHtml(addr)}</span>
+          </div>
+          <div class="grid2" style="margin-top:8px;">
+            <button type="button" class="ghost">開啟地圖</button>
+            <button type="button" class="ghost">分享 LINE</button>
+          </div>
+        `;
+
+        const [btnMap, btnShare] = card.querySelectorAll("button");
+
+        btnMap.addEventListener("click", () => {
+          __lastShareText = `推薦餐廳：${p.name}\n${url}`;
+          window.open(url, "_blank");
+        });
+
+        btnShare.addEventListener("click", async () => {
+          const text = `推薦餐廳：${p.name}\n${url}`;
+          __lastShareText = text;
+
+          if (navigator.share) {
+            try { await navigator.share({ title: "附近餐廳推薦", text, url }); return; } catch(e) {}
+          }
+          try { await navigator.clipboard.writeText(text); alert("已複製，貼到 LINE 即可"); }
+          catch(e){ alert("複製失敗，請手動複製"); }
+        });
+
+        wrap.appendChild(card);
       });
-
-      // 加入自訂選項（視為混搭）
-      custom.forEach(name=>{
-        if(name) pool.push({name, c:"混搭", f:"自訂"});
-      });
-
-      // 保底：條件太嚴格就放寬（避免按了沒結果）
-      if(pool.length===0){
-        pool = FOOD_DB.slice();
-      }
-
-      // 簡單偏好加權（不改 UI，只提高抽中機率）
-      const weighted = [];
-      pool.forEach(x=>{
-        const w = PREFER.has(x.c) ? 3 : 1;
-        for(let i=0;i<w;i++) weighted.push(x);
-      });
-
-      if(!triple){
-        return [ weighted[Math.floor(Math.random()*weighted.length)] ];
-      }
-
-      // 三選一：抽不重複
-      const out = [];
-      const seen = new Set();
-      let guard = 0;
-      while(out.length<3 && guard<100){
-        const x = weighted[Math.floor(Math.random()*weighted.length)];
-        if(!seen.has(x.name)){ seen.add(x.name); out.push(x); }
-        guard++;
-      }
-      return out;
     }
 
-    function showResult(list){
-      $("resultBox").style.display="block";
-      if(list.length===1){
-        $("resultTitle").textContent = "結論：" + list[0].name;
-        $("resultMeta").innerHTML = "";
-      }else{
-        $("resultTitle").textContent = "三選一（你選一個）";
-        $("resultMeta").innerHTML = list.map((x,i)=>`${i+1}. ${x.name}`).join("<br>");
+    // ---------- main: recommend places ----------
+    function recommendPlaces(){
+      if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY.includes("PASTE_")) {
+        alert("你還沒在 index.html 裡貼上 GOOGLE_MAPS_API_KEY");
+        return;
       }
 
-      // 寫入紀錄（只記第一個）
-      const h = loadHistory();
-      h.unshift({name:list[0].name, time:new Date().toLocaleString()});
-      saveHistory(h);
-      renderHistory();
+      const keyword = buildPlacesQuery();
+      const radius = parseInt(document.getElementById("radiusMeters")?.value || "1200", 10);
+      const limit  = parseInt(document.getElementById("limitCount")?.value || "5", 10);
 
-      // Maps 關鍵字
-      window.__lastKeyword = list[0].name + " 附近";
-    }
+      dbg(`start keyword="${keyword}", radius=${radius}, limit=${limit}`);
 
-    function decide(triple){
-      const list = pickCandidates(triple);
-      showResult(list);
-    }
-
-    function openMaps(){
-      const q = encodeURIComponent(window.__lastKeyword || "餐廳 附近");
-      window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, "_blank");
-    }
-
-    async function copyResult(){
-      const text = `${$("resultTitle").textContent}\n${$("resultMeta").innerText || ""}`.trim();
-      try{
-        await navigator.clipboard.writeText(text);
-        alert("已複製，可貼到 LINE");
-      }catch{
-        alert("複製失敗（瀏覽器限制），可手動選取文字複製。");
+      if (!navigator.geolocation) {
+        alert("此瀏覽器不支援定位");
+        return;
       }
+
+      dbg("request geolocation...");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          dbg(`geolocation OK lat=${lat}, lng=${lng}`);
+
+          loadGoogleMaps(() => {
+            dbg("Google Maps SDK loaded");
+
+            const anchor = document.getElementById("placesServiceAnchor");
+            const service = new google.maps.places.PlacesService(anchor);
+
+            dbg(`nearbySearch...`);
+            service.nearbySearch(
+              {
+                location: { lat, lng },
+                radius: radius,
+                // 只用 keyword（保留 radius 效果更明顯）
+                keyword: keyword
+              },
+              (results, status) => {
+                dbg(`callback status=${status}, count=${results ? results.length : 0}`);
+
+                const box  = document.getElementById("placesBox");
+                const meta = document.getElementById("placesMeta");
+                const wrap = document.getElementById("placesList");
+                box.style.display = "block";
+                meta.textContent = `關鍵字：${keyword}｜範圍：${radius}m｜狀態：${status}｜筆數：${results ? results.length : 0}`;
+
+                if (status !== google.maps.places.PlacesServiceStatus.OK || !results || results.length === 0) {
+                  wrap.innerHTML = `<div class="small">找不到結果（可把範圍調大到 2000m/3000m，或把選項選少一點）</div>`;
+                  __lastMoreUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(keyword + " near me")}&center=${lat},${lng}`;
+                  __lastShareText = `附近餐廳推薦（${keyword}）\n${__lastMoreUrl}`;
+                  return;
+                }
+
+                const sliced = results.slice(0, limit);
+                renderPlaces(sliced, keyword, radius);
+
+                __lastMoreUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(keyword + " near me")}&center=${lat},${lng}`;
+                __lastShareText = `附近餐廳推薦（${keyword}）\n${__lastMoreUrl}`;
+              }
+            );
+          });
+        },
+        () => alert("定位失敗或未允許定位（iPhone：設定 > Safari > 定位 允許）"),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+      );
     }
 
-    // 綁定按鈕（避免 iOS/某些環境 onclick 失效）
-    $("btnDecide").addEventListener("click", ()=>decide(false));
-    $("btnThree").addEventListener("click", ()=>decide(true));
-    $("btnMaps").addEventListener("click", openMaps);
-    $("btnCopy").addEventListener("click", copyResult);
+    // ---------- top buttons ----------
+    document.getElementById("btnPlaces")?.addEventListener("click", recommendPlaces);
+    document.getElementById("btnRefreshPlaces")?.addEventListener("click", recommendPlaces);
 
-    // 快速選取
-    $("cAll").addEventListener("click", ()=>setMulti("cuisine",
-      ["日式","中式","台式","港式","美式","義式","南洋","泰式","韓式","蔬食","混搭"]
-    ));
-    $("cClear").addEventListener("click", ()=>setMulti("cuisine", []));
-    $("cSafe").addEventListener("click", ()=>setMulti("cuisine", ["日式","台式","中式","混搭"]));
-
-    $("fAll").addEventListener("click", ()=>setMulti("format",
-      ["火鍋","簡餐","合菜","麵食","飯類","燒烤","熱炒","早午餐","輕食","小吃","吃到飽","咖啡甜點"]
-    ));
-    $("fClear").addEventListener("click", ()=>setMulti("format", []));
-    $("fSolo").addEventListener("click", ()=>setMulti("format", ["簡餐","麵食","飯類","小吃","輕食","咖啡甜點"]));
-    $("fGroup").addEventListener("click", ()=>setMulti("format", ["火鍋","合菜","燒烤","熱炒","吃到飽"]));
-
-    renderHistory();
-  </script>
-  <script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js");
-    });
-  }
-</script>
-
-  <!-- ====== 附近餐廳推薦（Places）UI ====== -->
-<div id="placesBox" style="display:none; margin-top:16px; padding:12px; border:1px solid #e5e7eb; border-radius:12px; background:#fff;">
-  <div style="font-weight:800; font-size:18px;">附近餐廳推薦</div>
-  <div id="placesMeta" style="margin-top:6px; color:#6b7280; font-size:13px;"></div>
-  <div id="placesList" style="margin-top:10px; display:grid; gap:10px;"></div>
-
-  <div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-    <button type="button" id="btnShareLine">分享給 LINE</button>
-    <button type="button" id="btnRefreshPlaces">重新推薦</button>
-  </div>
-</div>
-
-<div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-  <button type="button" id="btnPlaces">📍 推薦附近餐廳</button>
-  <button type="button" id="btnOpenMapsAll">在 Google Maps 看更多</button>
-</div>
-<!-- ====== /附近餐廳推薦（Places）UI ====== -->
-
-<script>
-  function loadGoogleMaps(cb){
-    if (window.google && window.google.maps && window.google.maps.places) return cb();
-    const s = document.createElement("script");
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=zh-TW&region=TW`;
-    s.async = true;
-    s.defer = true;
-    s.onload = cb;
-    document.head.appendChild(s);
-  }
-// ====== Places：附近餐廳推薦（顯示店名/評分/地址 + 開地圖 + 分享 LINE）======
-let __lastShareText = "";
-let __lastMoreUrl = "";
-
-// 如果你原本沒有 escapeHtml，補上（避免特殊字元壞掉）
-if (typeof escapeHtml !== "function") {
-  window.escapeHtml = function (s) {
-    return String(s).replace(/[&<>"']/g, (m) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m])
-    );
-  };
-}
-
-function buildPlacesQuery(){
-  const cuisines = getSelectedValues("cuisine"); // 料理系系（你上面選的）
-  const formats  = getSelectedValues("format");  // 用餐形式（你上面選的）
-
-  // 把「形式」轉成 Google 比較吃得懂的搜尋字
-  const formatMap = {
-    "火鍋": "火鍋",
-    "燒烤": "燒肉 燒烤",
-    "熱炒": "熱炒",
-    "麵食": "拉麵 麵食",
-    "飯類": "丼飯 便當 飯",
-    "簡餐": "簡餐 定食 便當",
-    "合菜": "合菜 桌菜",
-    "早午餐": "早午餐",
-    "輕食": "輕食 健康餐",
-    "小吃": "小吃",
-    "吃到飽": "吃到飽",
-    "咖啡甜點": "咖啡 甜點"
-  };
-
-  const parts = [];
-
-  if (cuisines.length) parts.push(cuisines.join(" "));
-  if (formats.length)  parts.push(formats.map(f => formatMap[f] || f).join(" "));
-
-  // 保底：永遠加餐廳
-  parts.push("餐廳");
-
-  return parts.join(" ").trim();
-}
-
-
-function renderPlaces(list, keyword, lat, lng){
-  const box  = document.getElementById("placesBox");
-  const meta = document.getElementById("placesMeta");
-  const wrap = document.getElementById("placesList");
-
-  box.style.display = "block";
-  const r = parseInt(document.getElementById("radiusMeters")?.value || "1200", 10);
-meta.textContent = `關鍵字：${keyword}｜範圍：${r}m`;
-
-
-  wrap.innerHTML = "";
-  list.forEach((p, idx) => {
-    const rating = (p.rating ?? "—");
-    const total  = (p.user_ratings_total ?? "—");
-    const addr   = (p.vicinity ?? "");
-    const url    = mapsUrlForPlace(p);
-
-    const card = document.createElement("div");
-    card.style.cssText = "border:1px solid #e5e7eb;border-radius:12px;padding:10px;background:#fff;";
-    card.innerHTML = `
-      <div style="font-weight:800;font-size:16px;">${idx+1}. ${escapeHtml(p.name || "餐廳")}</div>
-      <div style="margin-top:6px;font-size:13px;color:#374151;line-height:1.5;">
-        ⭐ ${rating}（${total}）<br>
-        <span style="color:#6b7280;">${escapeHtml(addr)}</span>
-      </div>
-      <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <button type="button" class="ghost">開啟地圖</button>
-        <button type="button" class="ghost">分享 LINE</button>
-      </div>
-    `;
-
-    const [btnMap, btnShare] = card.querySelectorAll("button");
-
-    btnMap.addEventListener("click", () => {
-      __lastShareText = `推薦餐廳：${p.name}\n${url}`;
-      window.open(url, "_blank");
+    document.getElementById("btnOpenMapsAll")?.addEventListener("click", () => {
+      if (!__lastMoreUrl) return alert("請先按「📍 推薦附近餐廳」");
+      window.open(__lastMoreUrl, "_blank");
     });
 
-    btnShare.addEventListener("click", async () => {
-      const text = `推薦餐廳：${p.name}\n${url}`;
-      __lastShareText = text;
-
-      // iPhone Safari：會跳系統分享面板（可選 LINE）
+    document.getElementById("btnShareLine")?.addEventListener("click", async () => {
+      if (!__lastShareText) return alert("請先按「📍 推薦附近餐廳」");
       if (navigator.share) {
-        try { await navigator.share({ title: "附近餐廳推薦", text, url }); return; } catch(e) {}
+        try { await navigator.share({ title:"附近餐廳推薦", text: __lastShareText, url: __lastMoreUrl }); return; } catch(e) {}
       }
-      // 不支援就複製
-      try { await navigator.clipboard.writeText(text); alert("已複製，貼到 LINE 即可"); }
+      try { await navigator.clipboard.writeText(__lastShareText); alert("已複製，貼到 LINE 即可"); }
       catch(e){ alert("複製失敗，請手動複製"); }
     });
 
-    wrap.appendChild(card);
-  });
-
-  __lastMoreUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(keyword + " near me")}&center=${lat},${lng}`;
-  __lastShareText = `附近餐廳推薦（${keyword}）\n${__lastMoreUrl}`;
-}
-
-function recommendPlaces(){
-  const keyword = buildPlacesQuery();
-
-  if (!navigator.geolocation) {
-    alert("此瀏覽器不支援定位");
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-
-      loadGoogleMaps(() => {
-        const service = new google.maps.places.PlacesService(document.getElementById("placesServiceAnchor"));
-
-
-        service.nearbySearch(
-          {
-            location: { lat, lng },
-            radius: parseInt(document.getElementById("radiusMeters")?.value || "1200", 10),
-
-            type: "restaurant",
-            keyword: keyword
-          },
-      (results, status) => {
-  const wrap = document.getElementById("placesList");
-  const meta = document.getElementById("placesMeta");
-  const r = parseInt(document.getElementById("radiusMeters")?.value || "1200", 10);
-
-  meta.textContent = `關鍵字：${keyword}｜範圍：${r}m｜狀態：${status}｜筆數：${results ? results.length : 0}`;
-
-  if (status !== google.maps.places.PlacesServiceStatus.OK || !results || results.length === 0) {
-    wrap.innerHTML = `<div style="color:#6b7280;font-size:13px;">找不到結果（可把範圍調大或關鍵字選少一點）</div>`;
-    return;
-  }
-
-  renderPlaces(results.slice(0, 5), keyword, lat, lng);
-}
-);
-          }
-        );
+    // ---------- register service worker ----------
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js");
       });
-    },
-    () => alert("定位失敗或未允許定位（iPhone：設定 > Safari > 定位 允許）"),
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
-  );
-}
-
-// 綁定 UI 按鈕
-document.getElementById("btnPlaces")?.addEventListener("click", recommendPlaces);
-document.getElementById("btnRefreshPlaces")?.addEventListener("click", recommendPlaces);
-document.getElementById("btnOpenMapsAll")?.addEventListener("click", () => {
-  if (!__lastMoreUrl) return alert("請先按「推薦附近餐廳」");
-  window.open(__lastMoreUrl, "_blank");
-});
-document.getElementById("btnShareLine")?.addEventListener("click", async () => {
-  if (!__lastShareText) return alert("請先按「推薦附近餐廳」");
-  if (navigator.share) {
-    try { await navigator.share({ title:"附近餐廳推薦", text: __lastShareText, url: __lastMoreUrl }); return; } catch(e) {}
-  }
-  try { await navigator.clipboard.writeText(__lastShareText); alert("已複製，貼到 LINE 即可"); }
-  catch(e){ alert("複製失敗，請手動複製"); }
-});
-
-</script>
-<!-- Google Places Service anchor (must be in DOM for iOS Safari) -->
-<div id="placesServiceAnchor" style="display:none;"></div>
-
-  
+    }
+  </script>
 </body>
 </html>
-
-
-
-
-
