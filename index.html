@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>不能說的秘密㊙️｜今天吃什麼 V2</title>
+  <style>
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",Arial,sans-serif;
+      background:#f5f6f8; margin:0; padding:18px;
+    }
+    .card{
+      max-width:560px; margin:auto; background:#fff; padding:18px;
+      border-radius:14px; box-shadow:0 6px 20px rgba(0,0,0,.08);
+    }
+    h1{font-size:20px; text-align:center; margin:6px 0 14px;}
+    .sub{font-size:12px; color:#6b7280; text-align:center; margin-bottom:8px;}
+    .row{display:flex; gap:10px; flex-wrap:wrap;}
+    label{display:block; margin-top:12px; font-size:14px;}
+    input, select, button{
+      width:100%; margin-top:8px; padding:10px; font-size:16px;
+      border-radius:10px; border:1px solid #cfcfcf;
+      box-sizing:border-box;
+    }
+    button{background:#2563eb; color:#fff; border:none; cursor:pointer;}
+    button.secondary{background:#111827;}
+    button.ghost{background:#fff; color:#111; border:1px solid #cfcfcf;}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;}
+    .hintrow{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
+    .result{margin-top:14px; padding:12px; border-radius:12px; background:#f3f4f6;}
+    .result .title{font-weight:700; font-size:18px;}
+    .meta{font-size:13px; color:#374151; line-height:1.5;}
+    .history ul{padding-left:18px; margin:8px 0 0;}
+    a{color:#2563eb;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>不能說的秘密㊙️｜今天吃什麼 V2</h1>
+    <div class="sub">快速決策｜可多選條件｜保留自訂｜會記住你近期吃過的</div>
+
+    <div class="row">
+      <div style="flex:1; min-width:160px;">
+        <label>用餐時段</label>
+        <select id="mealTime">
+          <option value="breakfast">早餐</option>
+          <option value="lunch" selected>午餐</option>
+          <option value="dinner">晚餐</option>
+          <option value="any">不分</option>
+        </select>
+      </div>
+      <div style="flex:1; min-width:160px;">
+        <label>避開近期吃過（天數）</label>
+        <select id="cooldownDays">
+          <option value="1">1 天</option>
+          <option value="2" selected>2 天</option>
+          <option value="3">3 天</option>
+          <option value="5">5 天</option>
+          <option value="7">7 天</option>
+          <option value="0">不避開</option>
+        </select>
+      </div>
+    </div>
+
+    <label>料理系系（可多選；不選=不限）</label>
+    <select id="cuisine" multiple size="7">
+      <option value="日式">日式料理</option>
+      <option value="中式">中式料理</option>
+      <option value="台式">台式料理</option>
+      <option value="港式">港式料理</option>
+      <option value="美式">美式料理</option>
+      <option value="義式">義式料理</option>
+      <option value="南洋">南洋料理</option>
+      <option value="泰式">泰式料理</option>
+      <option value="韓式">韓式料理</option>
+      <option value="蔬食">素食 / 蔬食</option>
+      <option value="混搭">異國混搭</option>
+    </select>
+
+    <div class="hintrow">
+      <button class="ghost" type="button" id="cAll">全選</button>
+      <button class="ghost" type="button" id="cClear">清除</button>
+      <button class="ghost" type="button" id="cSafe">常見</button>
+    </div>
+
+    <label>用餐形式（可多選；不選=不限）</label>
+    <select id="format" multiple size="8">
+      <option value="火鍋">火鍋</option>
+      <option value="簡餐">簡餐 / 便當</option>
+      <option value="合菜">合菜</option>
+      <option value="麵食">麵食 / 拉麵 / 粉麵</option>
+      <option value="飯類">飯類</option>
+      <option value="燒烤">燒烤</option>
+      <option value="熱炒">熱炒</option>
+      <option value="早午餐">早午餐</option>
+      <option value="輕食">輕食 / 健康餐</option>
+      <option value="小吃">小吃</option>
+      <option value="吃到飽">吃到飽</option>
+      <option value="咖啡甜點">咖啡 / 甜點</option>
+    </select>
+
+    <div class="hintrow">
+      <button class="ghost" type="button" id="fAll">全選</button>
+      <button class="ghost" type="button" id="fClear">清除</button>
+      <button class="ghost" type="button" id="fSolo">一人友善</button>
+      <button class="ghost" type="button" id="fGroup">多人聚餐</button>
+    </div>
+
+    <label>不吃關鍵字（逗號分隔，可空白）</label>
+    <input id="ban" placeholder="例如：咖哩,辣,內臟" />
+
+    <label>自訂補充（選填，逗號分隔）</label>
+    <input id="customFood" placeholder="例如：牛肉麵,酸菜白肉鍋,日式定食" />
+
+    <div class="grid2">
+      <button type="button" id="btnDecide">幫我決定</button>
+      <button type="button" class="secondary" id="btnThree">三選一（降低踩雷）</button>
+    </div>
+
+    <div class="result" id="resultBox" style="display:none;">
+      <div class="title" id="resultTitle"></div>
+      <div class="meta" id="resultMeta"></div>
+
+      <div class="grid2">
+        <button class="ghost" type="button" id="btnMaps">Google Maps 找附近</button>
+        <button class="ghost" type="button" id="btnCopy">一鍵複製（貼到 LINE）</button>
+      </div>
+    </div>
+
+    <div class="history">
+      <label>最近決策紀錄（本機）</label>
+      <ul id="historyList"></ul>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "eat_decider_history_v2";
+
+    const FOOD_DB = [
+      {name:"日式拉麵",c:"日式",f:"麵食"},
+      {name:"日式定食",c:"日式",f:"簡餐"},
+      {name:"壽司",c:"日式",f:"合菜"},
+      {name:"牛肉麵",c:"中式",f:"麵食"},
+      {name:"水餃 / 鍋貼",c:"中式",f:"小吃"},
+      {name:"滷肉飯",c:"台式",f:"飯類"},
+      {name:"鹽酥雞",c:"台式",f:"小吃"},
+      {name:"港式點心",c:"港式",f:"合菜"},
+      {name:"美式漢堡",c:"美式",f:"簡餐"},
+      {name:"義大利麵",c:"義式",f:"簡餐"},
+      {name:"南洋料理",c:"南洋",f:"合菜"},
+      {name:"泰式料理",c:"泰式",f:"合菜"},
+      {name:"韓式料理",c:"韓式",f:"合菜"},
+      {name:"火鍋",c:"混搭",f:"火鍋"},
+      {name:"燒烤",c:"混搭",f:"燒烤"},
+      {name:"熱炒",c:"台式",f:"熱炒"},
+      {name:"早午餐",c:"混搭",f:"早午餐"},
+      {name:"健康餐盒",c:"混搭",f:"輕食"},
+      {name:"吃到飽",c:"混搭",f:"吃到飽"},
+      {name:"咖啡甜點",c:"混搭",f:"咖啡甜點"}
+    ];
+
+    // 你偏好：喜歡日式、不喜歡咖哩/韓/泰/越（可自行刪掉）
+    const PREFER = new Set(["日式"]);
+    const DISLIKE = new Set(["韓式","泰式"]);
+
+    function $(id){ return document.getElementById(id); }
+    function getSelectedValues(id){
+      return [...$(id).selectedOptions].map(o=>o.value);
+    }
+    function loadHistory(){
+      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }catch{ return []; }
+    }
+    function saveHistory(h){ localStorage.setItem(STORAGE_KEY, JSON.stringify(h.slice(0,10))); }
+    function renderHistory(){
+      const ul = $("historyList"); ul.innerHTML="";
+      loadHistory().forEach(x=>{
+        const li=document.createElement("li");
+        li.textContent=`${x.name}（${x.time}）`;
+        ul.appendChild(li);
+      });
+    }
+    function setMulti(id, arr){
+      [...$(id).options].forEach(o=>o.selected=arr.includes(o.value));
+    }
+
+    function pickCandidates(triple){
+      const cuisines = getSelectedValues("cuisine");
+      const formats  = getSelectedValues("format");
+      const banRaw = $("ban").value.trim();
+      const ban = banRaw ? banRaw.split(",").map(s=>s.trim()).filter(Boolean) : [];
+      const customRaw = $("customFood").value.trim();
+      const custom = customRaw ? customRaw.split(",").map(s=>s.trim()).filter(Boolean) : [];
+
+      let pool = FOOD_DB.filter(x=>{
+        const cOK = cuisines.length===0 || cuisines.includes(x.c) || x.c==="混搭";
+        const fOK = formats.length===0 || formats.includes(x.f);
+        const banOK = ban.length===0 || !ban.some(b=>x.name.includes(b));
+        const dislikeOK = !DISLIKE.has(x.c);
+        return cOK && fOK && banOK && dislikeOK;
+      });
+
+      // 加入自訂選項（視為混搭）
+      custom.forEach(name=>{
+        if(name) pool.push({name, c:"混搭", f:"自訂"});
+      });
+
+      // 保底：條件太嚴格就放寬（避免按了沒結果）
+      if(pool.length===0){
+        pool = FOOD_DB.slice();
+      }
+
+      // 簡單偏好加權（不改 UI，只提高抽中機率）
+      const weighted = [];
+      pool.forEach(x=>{
+        const w = PREFER.has(x.c) ? 3 : 1;
+        for(let i=0;i<w;i++) weighted.push(x);
+      });
+
+      if(!triple){
+        return [ weighted[Math.floor(Math.random()*weighted.length)] ];
+      }
+
+      // 三選一：抽不重複
+      const out = [];
+      const seen = new Set();
+      let guard = 0;
+      while(out.length<3 && guard<100){
+        const x = weighted[Math.floor(Math.random()*weighted.length)];
+        if(!seen.has(x.name)){ seen.add(x.name); out.push(x); }
+        guard++;
+      }
+      return out;
+    }
+
+    function showResult(list){
+      $("resultBox").style.display="block";
+      if(list.length===1){
+        $("resultTitle").textContent = "結論：" + list[0].name;
+        $("resultMeta").innerHTML = "";
+      }else{
+        $("resultTitle").textContent = "三選一（你選一個）";
+        $("resultMeta").innerHTML = list.map((x,i)=>`${i+1}. ${x.name}`).join("<br>");
+      }
+
+      // 寫入紀錄（只記第一個）
+      const h = loadHistory();
+      h.unshift({name:list[0].name, time:new Date().toLocaleString()});
+      saveHistory(h);
+      renderHistory();
+
+      // Maps 關鍵字
+      window.__lastKeyword = list[0].name + " 附近";
+    }
+
+    function decide(triple){
+      const list = pickCandidates(triple);
+      showResult(list);
+    }
+
+    function openMaps(){
+      const q = encodeURIComponent(window.__lastKeyword || "餐廳 附近");
+      window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, "_blank");
+    }
+
+    async function copyResult(){
+      const text = `${$("resultTitle").textContent}\n${$("resultMeta").innerText || ""}`.trim();
+      try{
+        await navigator.clipboard.writeText(text);
+        alert("已複製，可貼到 LINE");
+      }catch{
+        alert("複製失敗（瀏覽器限制），可手動選取文字複製。");
+      }
+    }
+
+    // 綁定按鈕（避免 iOS/某些環境 onclick 失效）
+    $("btnDecide").addEventListener("click", ()=>decide(false));
+    $("btnThree").addEventListener("click", ()=>decide(true));
+    $("btnMaps").addEventListener("click", openMaps);
+    $("btnCopy").addEventListener("click", copyResult);
+
+    // 快速選取
+    $("cAll").addEventListener("click", ()=>setMulti("cuisine",
+      ["日式","中式","台式","港式","美式","義式","南洋","泰式","韓式","蔬食","混搭"]
+    ));
+    $("cClear").addEventListener("click", ()=>setMulti("cuisine", []));
+    $("cSafe").addEventListener("click", ()=>setMulti("cuisine", ["日式","台式","中式","混搭"]));
+
+    $("fAll").addEventListener("click", ()=>setMulti("format",
+      ["火鍋","簡餐","合菜","麵食","飯類","燒烤","熱炒","早午餐","輕食","小吃","吃到飽","咖啡甜點"]
+    ));
+    $("fClear").addEventListener("click", ()=>setMulti("format", []));
+    $("fSolo").addEventListener("click", ()=>setMulti("format", ["簡餐","麵食","飯類","小吃","輕食","咖啡甜點"]));
+    $("fGroup").addEventListener("click", ()=>setMulti("format", ["火鍋","合菜","燒烤","熱炒","吃到飽"]));
+
+    renderHistory();
+  </script>
+</body>
+</html>
