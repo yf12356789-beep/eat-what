@@ -460,7 +460,8 @@ function recommendPlaces(){
       const lng = pos.coords.longitude;
 
       loadGoogleMaps(() => {
-        const service = new google.maps.places.PlacesService(document.createElement("div"));
+        const service = new google.maps.places.PlacesService(document.getElementById("placesServiceAnchor"));
+
 
         service.nearbySearch(
           {
@@ -470,12 +471,21 @@ function recommendPlaces(){
             type: "restaurant",
             keyword: keyword
           },
-          (results, status) => {
-            if (status !== google.maps.places.PlacesServiceStatus.OK || !results || !results.length) {
-              alert("附近找不到餐廳：請放寬條件或把半徑調大");
-              return;
-            }
-            renderPlaces(results.slice(0, 5), keyword, lat, lng);
+      (results, status) => {
+  const wrap = document.getElementById("placesList");
+  const meta = document.getElementById("placesMeta");
+  const r = parseInt(document.getElementById("radiusMeters")?.value || "1200", 10);
+
+  meta.textContent = `關鍵字：${keyword}｜範圍：${r}m｜狀態：${status}｜筆數：${results ? results.length : 0}`;
+
+  if (status !== google.maps.places.PlacesServiceStatus.OK || !results || results.length === 0) {
+    wrap.innerHTML = `<div style="color:#6b7280;font-size:13px;">找不到結果（可把範圍調大或關鍵字選少一點）</div>`;
+    return;
+  }
+
+  renderPlaces(results.slice(0, 5), keyword, lat, lng);
+}
+);
           }
         );
       });
@@ -502,9 +512,13 @@ document.getElementById("btnShareLine")?.addEventListener("click", async () => {
 });
 
 </script>
+<!-- Google Places Service anchor (must be in DOM for iOS Safari) -->
+<div id="placesServiceAnchor" style="display:none;"></div>
+
   
 </body>
 </html>
+
 
 
 
